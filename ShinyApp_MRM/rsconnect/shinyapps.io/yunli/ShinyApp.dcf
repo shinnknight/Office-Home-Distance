@@ -1,0 +1,12 @@
+name: ShinyApp
+title: ShinyApp
+username:
+account: yunli
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 517130
+bundleId: 1646494
+url: https://yunli.shinyapps.io/ShinyApp/
+when: 1539723357.82747
+asMultiple: FALSE
+asStatic: FALSE

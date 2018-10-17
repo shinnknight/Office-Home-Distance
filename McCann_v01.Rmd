@@ -1,0 +1,164 @@
+---
+output: html_document
+runtime: shiny
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r interactive_modeler, echo=FALSE, message=FALSE}
+
+library(shiny)
+library(ggplot2)
+library(dplyr)
+library(shinythemes)
+
+logourl <- paste("http://www.nuoum.com/img/",
+                 "mccann_logo.png", sep ="")
+
+
+#Load Data
+#df <- read.csv("/Users/yunli/Documents/2018 Fall 5900 Capstone/(ORIGINAL) 2012 to Present Terminations as of 05302018.csv")
+
+#Shiny App
+shinyApp(
+  
+  options = list(height = "1200px"),
+    
+  ui <- 
+    fluidPage(
+      theme = shinytheme("cosmo"),
+      titlePanel(
+        title = div(img(src = logourl),
+                "EXIT PREDICTOR")
+      ),
+      fluidRow(
+        column(5,
+          wellPanel(
+            style = "background-color: #DDECFD;",
+            selectInput(
+              inputId = "bus", label = "Business Unit",
+              choices = c("MRM McCann New York" = 0, 
+                          "MRM McCann New Jersey" = 1, 
+                          "ME MRM Detroit" = 2, 
+                          "ME McCann Salt Lake City" = 3,
+                          "ME MRM San Francisco" = 4,
+                          "MRM Optaros New York" = 5
+                          ),
+              selected = NULL
+            ),
+            hr(),
+            selectInput(
+              inputId = "dep", label = "Department",
+              choices = c("Account Management" = 0, 
+                          "ADM OFCSV - MDI-NY-Admn" = 1, 
+                          "ADM Office Services / G&A" = 2, 
+                          "ADM Project Management" = 3,
+                          "Administration" = 4
+                          ),
+              selected = NULL
+            ),
+            hr(),
+            selectInput(
+              inputId = "gen", label = "Gender",
+              choices = c("Female" = 0, 
+                          "Male" = 1
+                          ),
+              selected = NULL
+            ),
+            hr(),
+            selectInput(
+              inputId = "eth", label = "Ethnicity",
+              choices = c("Asian" = 0, 
+                          "Black" = 1, 
+                          "Hispanic" = 2, 
+                          "White" = 3,
+                          "Other" = 4
+                          ),
+              selected = NULL
+            ),
+            hr(),
+            actionButton("go1", "Show Results")
+          )
+        ),
+        column(7,
+          wellPanel(
+            style = "background-color: #DDECFD;",
+            sliderInput(
+              inputId = "ten", label = "Tenure (Years)",
+              min = 0, max = 10, step = 1,
+              value = 0
+            ),
+            br(),
+            checkboxInput('Include Rehired', 'Include Rehired'),
+            checkboxInput('Exclude Rehired', 'Exclude Rehired'),
+            hr(),
+            sliderInput(
+              inputId = "age", label = "Age @ Hire",
+              min = 18, max = 35, step = 1,
+              value = 18
+            )
+            # hr(),
+            # sliderInput(
+            #   inputId = "sal", label = "Salary",
+            #   min = 10000, max = 125000, step = 1000,
+            #   value = 10000
+            # )
+          )
+        )
+      ),
+      fluidRow(
+        wellPanel(
+          plotOutput("normPlot")
+        )
+      )
+    ), 
+  
+  server <- 
+    function(input, output, session)
+      {
+        values <- reactiveValues(
+                    m = 0,
+                    s = 0,
+                    c = 1)
+        observeEvent(
+          input$go1, 
+          {
+            temp1 <- runif(1)
+            temp2 <- runif(1)
+            temp3 <- runif(1)
+            values$m <- temp1
+            values$s <- temp2
+            values$c <- temp3
+          }
+        )
+        output$normPlot <- 
+          renderPlot(
+            {
+              mean1 = values$m * 4 + 3
+              sd1 = values$s * 3
+              fcol = floor(values$c * 657)
+              limits1 = c(mean1 - 3 * sd1, mean1 + 3 * sd1)
+              xmin1 <- max(0, limits1[1])
+              xmax1 <- min(10, limits1[2])
+              x1 <- seq(limits1[1], limits1[2], length.out = 100)
+              areax1 <- seq(0, 10, length.out = 100)
+              area1 <- data.frame(x = areax1, 
+                                  ymin = 0, 
+                                  ymax = dnorm(areax1, mean = mean1, sd = sd1))
+              plt <- ggplot() +
+                geom_ribbon(data = area1, 
+                            mapping = aes(x = x1, ymin = ymin, ymax = ymax), 
+                            fill = fcol, alpha = 0.3,
+                            color = "black") +
+                labs(x = "Tenure Before Departure (Years)", y = "Probability") +
+                theme(axis.text=element_text(size=12),
+                      axis.title=element_text(size=14,face="bold"))
+              suppressWarnings(print(plt))
+            }
+          )
+      }
+  
+)
+```
